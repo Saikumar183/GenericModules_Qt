@@ -2,6 +2,7 @@
 #define BLOCKSONNUMBER_H
 
 #include <QWidget>
+#include "qtheaderfiles.h"
 
 namespace Ui {
 class BlocksOnNumber;
@@ -14,9 +15,29 @@ class BlocksOnNumber : public QWidget
 public:
     explicit BlocksOnNumber(QWidget *parent = 0);
     ~BlocksOnNumber();
-
+    void loadRegisters(const uint16_t *regs, int count);
+        void setInputRange(int min = 0, int max = 65535);
+    void setEditsEnabled(bool enable);
+    std::vector<uint16_t> getRegisters();
 private:
+
     Ui::BlocksOnNumber *ui;
+    QWidget *scrollWidget;        // widget inside the scroll area
+    QScrollArea *scrollArea;
+    QGridLayout *grid;
+    std::vector<QLineEdit*> lineEdits;
+
+    QComboBox *formatCombo;
+    QComboBox *endianCombo;
+    QPlainTextEdit *outputBox;
+    QIntValidator *byteValidator;
+public slots:
+    void updateLineEdits(int count);
+    void updateLineEdits(QString);
+    void refreshFormattedData();
+    void onFormatChanged(int);
+    void onEndianChanged(int);
+    void convertEditsToSelectedFormat();
 };
 
 #endif // BLOCKSONNUMBER_H

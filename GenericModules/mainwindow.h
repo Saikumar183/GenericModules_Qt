@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include "blocksonnumber.h"
 namespace Ui {
 class MainWindow;
 }
@@ -17,6 +17,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    BlocksOnNumber *ClassBlocksOnNumber;
 };
 
 #endif // MAINWINDOW_H
