@@ -1,0 +1,15 @@
+INPUT(
+./debug\main.o
+./debug\mainwindow.o
+./debug\communication.o
+./debug\setup_ip.o
+./debug\globalclass.o
+./debug\serialportwidget.o
+./debug\blocksonnumber.o
+./debug\qrc_media.o
+./debug\moc_mainwindow.o
+./debug\moc_communication.o
+./debug\moc_setup_ip.o
+./debug\moc_serialportwidget.o
+./debug\moc_blocksonnumber.o
+);

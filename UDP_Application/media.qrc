@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file>Images/protocol.png</file>
+    </qresource>
+</RCC>
