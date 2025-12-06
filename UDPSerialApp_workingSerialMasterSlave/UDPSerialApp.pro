@@ -27,18 +27,17 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     globalclass.cpp \
     serialportwidget.cpp \
-    blocksonnumber.cpp \
-    modbusscreen.cpp
+    modbusscreen.cpp \
+    endianregistergridwidget.cpp
 
 HEADERS  += mainwindow.h \
     globalclass.h \
     serialportwidget.h \
-    blocksonnumber.h \
     qtheaderfiles.h \
-    modbusscreen.h
+    modbusscreen.h \
+    endianregistergridwidget.h
 
 FORMS    += mainwindow.ui \
-    blocksonnumber.ui \
     modbusscreen.ui
 
 RESOURCES += \

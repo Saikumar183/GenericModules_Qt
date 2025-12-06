@@ -63,6 +63,57 @@ float GlobalClass::convertToFloat(uint32_t raw)
     memcpy(&f, &raw, sizeof(float));
     return f;
 }
+QByteArray GlobalClass::convertEndian(const QByteArray &input, EndianMode_et mode)
+{
+    QByteArray output = input;
+
+    // Only operate on blocks of 4 bytes (Modbus 2 registers = 32-bit)
+    for (int i = 0; i + 3 < output.size(); i += 4)
+    {
+        char A = output[i];
+        char B = output[i+1];
+        char C = output[i+2];
+        char D = output[i+3];
+
+        switch(mode)
+        {
+        case ABCD:
+            // Normal, no change
+            output[i]   = A;
+            output[i+1] = B;
+            output[i+2] = C;
+            output[i+3] = D;
+            break;
+
+        case CDAB:
+            // Word swap: C D A B
+            output[i]   = C;
+            output[i+1] = D;
+            output[i+2] = A;
+            output[i+3] = B;
+            break;
+
+        case BADC:
+            // Byte swap inside each word: B A D C
+            output[i]   = B;
+            output[i+1] = A;
+            output[i+2] = D;
+            output[i+3] = C;
+            break;
+
+        case DCBA:
+            // Full reverse: D C B A
+            output[i]   = D;
+            output[i+1] = C;
+            output[i+2] = B;
+            output[i+3] = A;
+            break;
+        }
+    }
+
+    return output;
+}
+
 uint32_t GlobalClass::combine32(uint16_t r1, uint16_t r2, EndianMode_et mode)
 {
     switch (mode)
@@ -129,7 +180,8 @@ void GlobalClass::UpdateStatusLabel(const QString& message, bool isError)
 {
     Application.lbl_statuspanel->setText(message);
 
-    QString bgColor = isError ? "red" : "green";
+    QString bgColor = isError ? QString(" %1").arg(getBlinkColor(None).name()) :
+                                QString(" %1").arg(getBlinkColor(Application.currentTheme).name());//"red": "green";
     Application.lbl_statuspanel->setStyleSheet(QString("QLabel { padding:7px; background-color: %1; color: white; }").arg(bgColor));
     Application.lbl_statuspanel_flag = true;
     Application.lbl_statuspanel_cntr = 0;

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "globalclass.h"
-#include "blocksonnumber.h"
+#include "endianregistergridwidget.h"
 #include <QSerialPort>
 // Simple enum for Modbus exception (optional)
 enum ModbusException {
@@ -39,11 +39,12 @@ public:
     void UpdateTxDataBlink();
     void UpdateRxDataBlink();
     void UpdatePackeCounts();
+    void UpdateErrorPacketsBlink();
     void showLogDialog(const QString &text);
     void CopySerialPor(QSerialPort *Serial);
 private:
     Ui::ModbusScreen *ui;
-    BlocksOnNumber *ClassBlocksOnNumber;
+    EndianRegisterGridWidget *m_regGrid = nullptr;
     struct LogDialogUI {
         QDialog *dialog = nullptr;
         QTextEdit *textEdit = nullptr;
@@ -71,9 +72,11 @@ private:
     int expectedRequestLength(const QByteArray &buf);
     void handleModbusRequest(const QByteArray &frame);
     void handleModbusMasterResponse(const QByteArray &frame);
+    QByteArray convertEndian(const QByteArray &input, EndianMode_et mode);
 signals:
     void sendSerialData(QByteArray);
 public slots:
+
     void ScanTimerFunction();
     void on_tbn_ComWindow_clicked();
     void buildModbusRTUFrame(quint8 slaveId,
@@ -93,6 +96,8 @@ public slots:
 
 
 private slots:
+    void onRegisterCountChanged(const QString &text);
+
     void on_tbn_SendCmd_clicked();
     void on_tbn_ResetCounts_clicked();
     void on_tbn_ComWindow_clicked(bool checked);

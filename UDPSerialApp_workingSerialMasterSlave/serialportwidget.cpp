@@ -108,6 +108,7 @@ SerialPortWidget::SerialPortWidget(QWidget *parent) : QWidget(parent),
     pushButtonNumber->setChecked(true);
     onNumberButtonClicked();
     //    pushButtonExit->setEnabled(false);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void SerialPortWidget::startSendingCommands()

@@ -22,6 +22,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -59,9 +60,15 @@ public:
     QFrame *frame_2;
     QHBoxLayout *horizontalLayout_2;
     QLabel *label_Tx;
+    QLabel *label_Error;
     QLabel *label_Rx;
+    QHBoxLayout *horizontalLayout;
+    QSpacerItem *horizontalSpacer;
     QPushButton *tbn_ComWindow;
+    QComboBox *CmBx_byteFormate;
+    QComboBox *CmBx_dataFormat;
     QVBoxLayout *verticalLayout_3;
+    QWidget *wg_EndianView;
 
     void setupUi(QWidget *ModbusScreen)
     {
@@ -151,6 +158,7 @@ public:
         sizePolicy.setHeightForWidth(le_registercount->sizePolicy().hasHeightForWidth());
         le_registercount->setSizePolicy(sizePolicy);
         le_registercount->setFont(font);
+        le_registercount->setMaxLength(250);
 
         gridLayout_7->addWidget(le_registercount, 2, 1, 1, 1);
 
@@ -263,6 +271,13 @@ public:
 
         horizontalLayout_2->addWidget(label_Tx);
 
+        label_Error = new QLabel(frame_2);
+        label_Error->setObjectName(QStringLiteral("label_Error"));
+        label_Error->setFont(font);
+        label_Error->setWordWrap(true);
+
+        horizontalLayout_2->addWidget(label_Error);
+
         label_Rx = new QLabel(frame_2);
         label_Rx->setObjectName(QStringLiteral("label_Rx"));
         label_Rx->setFont(font);
@@ -273,15 +288,41 @@ public:
 
         gridLayout_5->addWidget(frame_2, 2, 0, 1, 1);
 
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer);
+
         tbn_ComWindow = new QPushButton(ModbusScreen);
         tbn_ComWindow->setObjectName(QStringLiteral("tbn_ComWindow"));
         tbn_ComWindow->setFont(font);
         tbn_ComWindow->setCheckable(true);
 
-        gridLayout_5->addWidget(tbn_ComWindow, 3, 0, 1, 1);
+        horizontalLayout->addWidget(tbn_ComWindow);
+
+        CmBx_byteFormate = new QComboBox(ModbusScreen);
+        CmBx_byteFormate->setObjectName(QStringLiteral("CmBx_byteFormate"));
+        CmBx_byteFormate->setFont(font);
+
+        horizontalLayout->addWidget(CmBx_byteFormate);
+
+        CmBx_dataFormat = new QComboBox(ModbusScreen);
+        CmBx_dataFormat->setObjectName(QStringLiteral("CmBx_dataFormat"));
+        CmBx_dataFormat->setFont(font);
+
+        horizontalLayout->addWidget(CmBx_dataFormat);
+
+
+        gridLayout_5->addLayout(horizontalLayout, 3, 0, 1, 1);
 
         verticalLayout_3 = new QVBoxLayout();
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
+        wg_EndianView = new QWidget(ModbusScreen);
+        wg_EndianView->setObjectName(QStringLiteral("wg_EndianView"));
+
+        verticalLayout_3->addWidget(wg_EndianView);
+
 
         gridLayout_5->addLayout(verticalLayout_3, 1, 0, 1, 1);
 
@@ -327,10 +368,25 @@ public:
         lb_ErsPkts->setText(QApplication::translate("ModbusScreen", "|Error Packets:", Q_NULLPTR));
         lb_RxPkts->setText(QApplication::translate("ModbusScreen", "|Rx Packets:", Q_NULLPTR));
         tbn_ResetCounts->setText(QApplication::translate("ModbusScreen", "RESET COUNTS", Q_NULLPTR));
-        checkBox_Slave->setText(QApplication::translate("ModbusScreen", "SLAVE", Q_NULLPTR));
+        checkBox_Slave->setText(QApplication::translate("ModbusScreen", "SLAVE\n"
+"(0x06,0x10)", Q_NULLPTR));
         label_Tx->setText(QApplication::translate("ModbusScreen", "Tx:", Q_NULLPTR));
+        label_Error->setText(QApplication::translate("ModbusScreen", "Er:", Q_NULLPTR));
         label_Rx->setText(QApplication::translate("ModbusScreen", "Rx:", Q_NULLPTR));
         tbn_ComWindow->setText(QApplication::translate("ModbusScreen", "COMMUNICATION WINDOW", Q_NULLPTR));
+        CmBx_byteFormate->clear();
+        CmBx_byteFormate->insertItems(0, QStringList()
+         << QApplication::translate("ModbusScreen", "0x0A0B0C0D", Q_NULLPTR)
+         << QApplication::translate("ModbusScreen", "0x0C0D0A0B", Q_NULLPTR)
+         << QApplication::translate("ModbusScreen", "0x0B0A0D0C", Q_NULLPTR)
+         << QApplication::translate("ModbusScreen", "0x0D0C0B0A", Q_NULLPTR)
+        );
+        CmBx_dataFormat->clear();
+        CmBx_dataFormat->insertItems(0, QStringList()
+         << QApplication::translate("ModbusScreen", "HEX", Q_NULLPTR)
+         << QApplication::translate("ModbusScreen", "DECIMAL", Q_NULLPTR)
+         << QApplication::translate("ModbusScreen", "BINARY", Q_NULLPTR)
+        );
     } // retranslateUi
 
 };

@@ -1,6 +1,6 @@
 #include "modbusscreen.h"
 #include "ui_modbusscreen.h"
-
+#include <QScrollArea>
 ModbusScreen::ModbusScreen(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ModbusScreen)
@@ -19,8 +19,27 @@ ModbusScreen::~ModbusScreen()
 }
 void ModbusScreen::Init_Screens(void )
 {
-    ClassBlocksOnNumber = new BlocksOnNumber(this);
-    ui->verticalLayout_3->addWidget(ClassBlocksOnNumber);
+
+    m_regGrid = new EndianRegisterGridWidget(this);
+
+    QScrollArea *scroll = new QScrollArea(ui->wg_EndianView);
+    scroll->setWidget(m_regGrid);
+    scroll->setWidgetResizable(true);
+
+    QVBoxLayout *hostLayout = new QVBoxLayout(ui->wg_EndianView);
+    hostLayout->addWidget(scroll);
+    ui->wg_EndianView->setLayout(hostLayout);
+    // Connect your endian dropdown to the grid class
+    connect(ui->CmBx_byteFormate,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            m_regGrid,
+            &EndianRegisterGridWidget::setEndianModeIndex);
+
+    connect(ui->CmBx_dataFormat,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            m_regGrid,
+            &EndianRegisterGridWidget::setDisplayFormatIndex);
+
 }
 void ModbusScreen::Init_Hides(bool state)
 {
@@ -28,6 +47,8 @@ void ModbusScreen::Init_Hides(bool state)
 }
 void ModbusScreen::Init_Connects(void )
 {
+    connect(ui->le_registercount, &QLineEdit::textChanged,
+            this, &ModbusScreen::onRegisterCountChanged);
 
 }
 
@@ -204,13 +225,50 @@ int ModbusScreen::get_scanTime()
 void ModbusScreen::UpdatePackeCounts()
 {
      ui->lb_TxPkts->setText("Tx Packets: "+QString::number(Application.TxPackets));
-     ui->lb_RxPkts->setText("|Rx Packets: "+QString::number(Application.RxPackets));
-     ui->lb_ErsPkts->setText("|Error Packets: "+QString::number(Application.ErrorPackets));
+     ui->lb_RxPkts->setText("| Rx Packets: "+QString::number(Application.RxPackets));
+     ui->lb_ErsPkts->setText("| Error Packets: "+QString::number(Application.ErrorPackets));
 
 }
+void ModbusScreen::UpdateErrorPacketsBlink()
+{
+    Application.ErrorData = convertEndian(Application.ErrorData,(EndianMode_et)ui->CmBx_byteFormate->currentIndex());
+    ui->label_Error->setText(
+        "(" + QString::number(Application.ErrorData.size()) + " Bytes) Error: " +
+        Application.ErrorData.toHex().toUpper()
+    );
 
+    if (Application.Modbusconnection_ErrorFlag)
+    {
+        // Get blink color based on current theme
+        QColor blinkColor = Application.getBlinkColor(Application.currentTheme);
+
+        ui->label_Error->setStyleSheet(
+            QString("background-color: %1; color: white; border-radius: 5px;")
+            .arg(blinkColor.name())
+        );
+        ui->lb_ErsPkts->setStyleSheet(ui->label_Error->styleSheet());
+
+        // Reset flag so we only blink once per packet
+        Application.Modbusconnection_ErrorFlag = false;
+
+        // Blink OFF after 200 ms
+        QTimer::singleShot(50, this, [this]() {
+            ui->label_Error->setStyleSheet(""); // Restore theme style
+            ui->lb_ErsPkts->setStyleSheet(ui->label_Error->styleSheet());
+        });
+        Application.ErrorPackets++;
+        if(logUI.dialog->isVisible())
+        {
+            showLogDialog(QString::number(Application.ErrorPackets)+":"+ui->label_Error->text());
+        }
+
+//        Application.LogModbusData();
+    }
+}
 void ModbusScreen::UpdateRxDataBlink()
 {
+
+    Application.RxData = convertEndian(Application.RxData,(EndianMode_et)ui->CmBx_byteFormate->currentIndex());
     ui->label_Rx->setText(
         "(" + QString::number(Application.RxData.size()) + " Bytes) Rx: " +
         Application.RxData.toHex().toUpper()
@@ -226,6 +284,7 @@ void ModbusScreen::UpdateRxDataBlink()
             QString("background-color: %1; color: white; border-radius: 5px;")
             .arg(blinkColor.name())
         );
+        ui->lb_RxPkts->setStyleSheet(ui->label_Rx->styleSheet());
 
         // Reset flag so we only blink once per packet
         Application.Modbusconnection_RxFlag = false;
@@ -233,6 +292,7 @@ void ModbusScreen::UpdateRxDataBlink()
         // Blink OFF after 200 ms
         QTimer::singleShot(50, this, [this]() {
             ui->label_Rx->setStyleSheet(""); // Restore theme style
+            ui->lb_RxPkts->setStyleSheet(ui->label_Rx->styleSheet());
         });
         Application.RxPackets++;
         if(logUI.dialog->isVisible())
@@ -246,6 +306,7 @@ void ModbusScreen::UpdateRxDataBlink()
 
 void ModbusScreen::UpdateTxDataBlink()
 {
+    Application.TxData = convertEndian(Application.TxData,(EndianMode_et)ui->CmBx_byteFormate->currentIndex());
     ui->label_Tx->setText(
         "(" + QString::number(Application.TxData.size()) + " Bytes) Tx: " +
         Application.TxData.toHex().toUpper()
@@ -261,10 +322,13 @@ void ModbusScreen::UpdateTxDataBlink()
             .arg(blinkColor.name())
         );
 
+        ui->lb_TxPkts->setStyleSheet(ui->label_Tx->styleSheet());
         Application.Modbusconnection_TxFlag = false;
 
         QTimer::singleShot(50, this, [this]() {
+
             ui->label_Tx->setStyleSheet(""); // Restore theme style
+            ui->lb_TxPkts->setStyleSheet(ui->label_Tx->styleSheet());
         });
         Application.TxPackets++;
         if(logUI.dialog->isVisible())
@@ -286,12 +350,77 @@ void ModbusScreen::on_tbn_SendCmd_clicked()
         QMessageBox::warning(this, "Selection Error", "Select 'data over serial / udp' to send." );
         return;
     }
+    // Common things you already do...
+    quint8  slaveId      = ModbusScreenSlaveID;
+    quint8  functionCode = ModbusScreenFunctionCode;
+    quint16 startAddress = ModbusScreenStartingAddress;
+    quint16 regCount     = ModbusScreenRegQuantity;
 
-    uint16_t *ptr;
-    buildModbusRTUFrame(ModbusScreenSlaveID,ModbusScreenFunctionCode,ModbusScreenStartingAddress
-                        ,ptr,ModbusScreenRegQuantity);
+    const uint16_t *ptr = nullptr;
+    quint16 dataSize = 0;
 
+    QVector<uint16_t> txValues;   // buffer to hold values from grid
+
+    // ─────────────────────────────
+    // WRITE functions: 0x06, 0x10
+    // ─────────────────────────────
+    if (functionCode == MODBUS_FUNC_WRITE_SINGLE_REGISTER ||
+        functionCode == MODBUS_FUNC_WRITE_MULTIPLE_REGISTERS)
+    {
+        if (!m_regGrid)
+        {
+            Application.UpdateStatusLabel("Grid not ready.", true);
+            return;
+        }
+
+        // 0x06 = only 1 register
+        if (functionCode == MODBUS_FUNC_WRITE_SINGLE_REGISTER)
+            regCount = 1;
+
+        // Ensure we don't read more cells than grid has
+        int cellsAvailable = m_regGrid->cellCount();
+        if (cellsAvailable < regCount)
+        {
+            Application.UpdateStatusLabel("Not enough values in grid.", true);
+            return;
+        }
+
+        txValues.reserve(regCount);
+
+        for (int i = 0; i < regCount; ++i)
+        {
+            quint16 value = 0;
+            if (!m_regGrid->wordAt(i, value))
+            {
+                Application.UpdateStatusLabel(
+                    QString("Invalid value at register %1.").arg(i),
+                    true);
+                return;
+            }
+            txValues.push_back(value);
+        }
+
+        ptr      = txValues.constData();
+        dataSize = static_cast<quint16>(txValues.size());
+    }
+    else
+    {
+        // ─────────────────────────────
+        // READ functions: 0x01, 0x02, 0x03, 0x04
+        // No data payload needed
+        // ─────────────────────────────
+        ptr      = nullptr;
+        dataSize = regCount;
+    }
+
+    // 🔹 Final call – now ptr points to real data for 0x06 / 0x10
+    buildModbusRTUFrame(slaveId,
+                        functionCode,
+                        startAddress,
+                        ptr,
+                        dataSize);
 }
+
 
 void ModbusScreen::on_tbn_ComWindow_clicked(bool checked)
 {
@@ -398,65 +527,7 @@ void ModbusScreen::buildModbusRTUFrame(quint8 slaveId,
     Application.TxData = frame;
     Application.Modbusconnection_TxFlag = true;
     emit sendSerialData(Application.TxData);
-/*
-    // ----- Time-out logic starts here -----
 
-    // Fetch timeout & scan time from UI (adjust widget names)
-    bool ok1 = false, ok2 = false;
-    int timeoutMs = ui->le_timeOut->text().toInt(&ok1);
-    int scanMs    = ui->le_scantime->text().toInt(&ok2);
-
-    if (!ok1 || timeoutMs < 0) timeoutMs = 0;
-    if (!ok2 || scanMs < 0)    scanMs = 0;
-
-    // Total wait = timeout + scan time
-    int totalWait = timeoutMs + scanMs;
-    if (totalWait <= 0)
-    {
-        totalWait = 500; // default if user kept 0
-    }
-
-    // Reset RxFlag before waiting
-//    Application.Modbusconnection_RxFlag = false;
-
-    // Timer will check for response
-    static QTimer *timer = nullptr;
-    if (!timer)
-    {
-        timer = new QTimer(this);
-        timer->setSingleShot(true);
-
-        connect(timer, &QTimer::timeout, this, [=]()
-        {
-
-            if(m_rxBuffer.size() > 0)
-            {
-                handleModbusMasterResponse(m_rxBuffer);
-                m_rxBuffer.clear();
-            }
-            // Timer expired -> Check if we got response
-            if (!Application.Modbusconnection_RxFlag)
-            {
-                // ❌ No data received within wait time -> just wait (stop)
-                Application.ErrorPackets++;
-                return;
-            }
-
-            // ✔ Response came before time-out
-            // Now check if scan is enabled
-            if (ui->checkBox_autoSend->isChecked())
-            {
-                // Send same request again after scan time finishes
-                QTimer::singleShot(scanMs, this, [=]() {
-                    emit sendSerialData(Application.TxData);
-                });
-            }
-        });
-    }
-
-    // Start waiting after sending
-    timer->start(totalWait);
-*/
 }
 void ModbusScreen::buildModbusRTUSlaveResponse(quint8 slaveId,
                                                quint8 functionCode,
@@ -612,7 +683,14 @@ void ModbusScreen::handleModbusRequest(const QByteArray &frame)
                          | static_cast<uint8_t>(frame[3]);
         uint16_t value = (static_cast<uint8_t>(frame[4]) << 8)
                          | static_cast<uint8_t>(frame[5]);
-
+        // 🔹 NEW: show that single register in the grid
+            if (m_regGrid)
+            {
+                QByteArray dataBytes;
+                dataBytes.append(static_cast<char>((value >> 8) & 0xFF));
+                dataBytes.append(static_cast<char>( value       & 0xFF));
+                m_regGrid->setData(dataBytes);
+            }
         if (addr >= m_holdingRegs.size()) {
             buildModbusRTUSlaveResponse(slaveId, func, addr,
                                         nullptr, 0,
@@ -620,6 +698,7 @@ void ModbusScreen::handleModbusRequest(const QByteArray &frame)
             Application.UpdateStatusLabel("Address range exceeded.",true);
             return;
         }
+
 
         m_holdingRegs[addr] = value;
 
@@ -656,6 +735,12 @@ void ModbusScreen::handleModbusRequest(const QByteArray &frame)
         return;
         }
 
+        // 🔹 Data bytes from master (write values)
+        QByteArray dataBytes = frame.mid(7, byteCount);
+
+        // 🔹 Show in the grid
+        if (m_regGrid)
+            m_regGrid->setData(dataBytes);
         // Data starts at index 7
         for (int i = 0; i < count; ++i)
         {
@@ -732,6 +817,12 @@ void ModbusScreen::handleModbusMasterResponse(const QByteArray &frame)
             Application.UpdateStatusLabel("Master: Odd byte count for registers.", true);
             return;
         }
+        // 🔹 Data bytes from slave
+        QByteArray dataBytes = frame.mid(3, byteCount);
+
+        // 🔹 Show in the new grid (each cell = 2 bytes)
+        if (m_regGrid)
+            m_regGrid->setData(dataBytes);
 
         quint16 regCount = byteCount / 2;
         QVector<uint16_t> regs;
@@ -774,6 +865,14 @@ void ModbusScreen::handleModbusMasterResponse(const QByteArray &frame)
                         | static_cast<quint8>(frame[3]);
         quint16 value = (static_cast<quint8>(frame[4]) << 8)
                         | static_cast<quint8>(frame[5]);
+        // Show the echoed written value in grid (2 bytes)
+        if (m_regGrid)
+        {
+            QByteArray dataBytes;
+            dataBytes.append(static_cast<char>((value >> 8) & 0xFF));
+            dataBytes.append(static_cast<char>( value       & 0xFF));
+            m_regGrid->setData(dataBytes);
+        }
 
         // Optional: verify it matches what we sent
         // (ModbusScreenStartingAddress, last written value...)
@@ -859,7 +958,8 @@ void ModbusScreen::handleModbusMasterResponse(const QByteArray &frame)
                           .arg(exceptionCode);
 
             Application.UpdateStatusLabel(msg, true);
-            Application.ErrorPackets++;
+             Application.Modbusconnection_ErrorFlag = true;
+
         }
         else
         {
@@ -914,38 +1014,145 @@ void ModbusScreen::ScanTimerFunction()
 
     }
     UpdateTxDataBlink();
+    UpdateErrorPacketsBlink();
     UpdateRxDataBlink();
     UpdatePackeCounts();
 }
+QByteArray ModbusScreen::convertEndian(const QByteArray &input, EndianMode_et mode)
+{
+    QByteArray output = input;
 
+    // Only operate on blocks of 4 bytes (Modbus 2 registers = 32-bit)
+    for (int i = 0; i + 3 < output.size(); i += 4)
+    {
+        char A = output[i];
+        char B = output[i+1];
+        char C = output[i+2];
+        char D = output[i+3];
+
+        switch(mode)
+        {
+        case ABCD:
+            // Normal, no change
+            output[i]   = A;
+            output[i+1] = B;
+            output[i+2] = C;
+            output[i+3] = D;
+            break;
+
+        case CDAB:
+            // Word swap: C D A B
+            output[i]   = C;
+            output[i+1] = D;
+            output[i+2] = A;
+            output[i+3] = B;
+            break;
+
+        case BADC:
+            // Byte swap inside each word: B A D C
+            output[i]   = B;
+            output[i+1] = A;
+            output[i+2] = D;
+            output[i+3] = C;
+            break;
+
+        case DCBA:
+            // Full reverse: D C B A
+            output[i]   = D;
+            output[i+1] = C;
+            output[i+2] = B;
+            output[i+3] = A;
+            break;
+        }
+    }
+
+    return output;
+}
 void ModbusScreen::on_Cmbx_Func_Code_currentIndexChanged(const QString &arg1)
 {
-    // Extract hex value from selected text
+    // Existing code to extract function code
     QString selectedText = ui->Cmbx_Func_Code->currentText();
     QRegularExpression regex("\\(0x([0-9A-Fa-f]+)\\)");
     QRegularExpressionMatch match = regex.match(selectedText);
 
     uint8_t functionCode = 0;
     if (match.hasMatch()) {
-        QString hexString = match.captured(1);  // e.g., "04"
-        functionCode = hexString.toUInt(nullptr, 16);  // convert hex to int
+        QString hexString = match.captured(1);  // e.g., "06"
+        functionCode = hexString.toUInt(nullptr, 16);
     }
-    bool valVisible =  false;
 
+    Application.FunctionCode   = functionCode;
+    ModbusScreenFunctionCode   = Application.FunctionCode;
 
-    switch (functionCode)
+    // 🔹 NEW: configure the register grid based on function code
+    if (!m_regGrid)
+        return;
+
+    // Clear old content behavior depending on function code
+    if (functionCode == MODBUS_FUNC_WRITE_SINGLE_REGISTER)   // 0x06
     {
-    case MODBUS_FUNC_WRITE_MULTIPLE_REGISTERS:
-    case MODBUS_FUNC_WRITE_SINGLE_REGISTER:
-         valVisible =  true;
-        break;
+        // One register = 2 bytes, editable
+        m_regGrid->setEditable(true);
 
-    default:
-        break;
+        QByteArray dataBytes;
+        dataBytes.append(char(0x00));   // hi byte
+        dataBytes.append(char(0x00));   // lo byte
+
+        m_regGrid->setData(dataBytes);
+
+        // Optionally force register count to 1 in UI:
+        if (ui->le_registercount)
+            ui->le_registercount->setText("1");
     }
-    ClassBlocksOnNumber->setEditsEnabled(valVisible);
-    Application.FunctionCode = functionCode;
-    ModbusScreenFunctionCode = Application.FunctionCode;
+    else if (functionCode == MODBUS_FUNC_WRITE_MULTIPLE_REGISTERS) // 0x10
+    {
+        // 🔹 instead of duplicating logic, just call the new slot:
+        onRegisterCountChanged(ui->le_registercount->text());
+        m_regGrid->setEditable(true);
+
+//        // Create N registers (2 bytes each) from register count line edit
+//        bool ok = false;
+//        int regCount = ui->le_registercount->text().toInt(&ok);
+//        if (!ok || regCount <= 0) regCount = 1;
+
+//        QByteArray dataBytes(regCount * 2, char(0x00));  // all zeros initially
+//        m_regGrid->setData(dataBytes);
+    }
+    else
+    {
+        // For read functions etc → just show data received, no editing
+        m_regGrid->setEditable(false);
+        // optionally clear or leave last response
+        // m_regGrid->setData(QByteArray());
+    }
+}
+void ModbusScreen::onRegisterCountChanged(const QString &text)
+{
+    // Only care when function code is WRITE_MULTIPLE_REGISTERS (0x10)
+    if (ModbusScreenFunctionCode != MODBUS_FUNC_WRITE_MULTIPLE_REGISTERS)
+        return;
+
+    if (!m_regGrid)
+        return;
+
+    bool ok = false;
+    int regCount = text.toInt(&ok);
+    if (!ok || regCount <= 0)
+    {
+        // No valid register count → clear grid
+        m_regGrid->setData(QByteArray());
+        return;
+    }
+
+    // Optional: limit max registers (Modbus spec: often 123 or 125)
+    // int maxRegs = 125;
+    // if (regCount > maxRegs) regCount = maxRegs;
+
+    // Each register = 2 bytes
+    QByteArray dataBytes(regCount * 2, char(0x00));
+
+    m_regGrid->setEditable(true);     // write-multiple is user-editable
+    m_regGrid->setData(dataBytes);    // will rebuild grid with N cells
 }
 
 bool ModbusScreen::checkCRC(const QByteArray &frame)
@@ -1070,25 +1277,42 @@ void ModbusScreen::on_checkBox_ModbusOverUdp_clicked(bool checked)
 
 void ModbusScreen::on_checkBox_Master_clicked(bool checked)
 {
-    if(ui->checkBox_Slave->isChecked())
+    // Block signals so changing slave checkbox won't trigger its slot
+    ui->checkBox_Slave->blockSignals(true);
+    ui->checkBox_Master->blockSignals(true);
+
+    if (checked)
     {
         ui->checkBox_Slave->setChecked(false);
         isModbusSlaveEnabled = false;
     }
-     isModbusMasterEnabled = checked;
-     ui->checkBox_Master->setChecked(isModbusMasterEnabled);
+
+    isModbusMasterEnabled = checked;
+    ui->checkBox_Master->setChecked(checked);
+
+    // Re-enable signals
+    ui->checkBox_Slave->blockSignals(false);
+    ui->checkBox_Master->blockSignals(false);
 }
 
 void ModbusScreen::on_checkBox_Slave_clicked(bool checked)
 {
-    if(ui->checkBox_Master->isChecked())
+    ui->checkBox_Slave->blockSignals(true);
+    ui->checkBox_Master->blockSignals(true);
+
+    if (checked)
     {
         ui->checkBox_Master->setChecked(false);
         isModbusMasterEnabled = false;
     }
-     isModbusSlaveEnabled = checked;
-     ui->checkBox_Slave->setChecked(isModbusSlaveEnabled);
+
+    isModbusSlaveEnabled = checked;
+    ui->checkBox_Slave->setChecked(checked);
+
+    ui->checkBox_Slave->blockSignals(false);
+    ui->checkBox_Master->blockSignals(false);
 }
+
 
 void ModbusScreen::on_checkBox_autoSend_clicked(bool checked)
 {

@@ -37,7 +37,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 void MainWindow::Init_Screens(void )
 {
     SerialPort_Screen = new SerialPortWidget();
-    ui->verticalLayout->addWidget(SerialPort_Screen);
+    QVBoxLayout *lay = new QVBoxLayout(ui->serialPlaceholder);
+    lay->addWidget(SerialPort_Screen);
+    ui->serialPlaceholder->setLayout(lay);
 
     ClassModbusScreen = new ModbusScreen(this);
     ui->verticalLayout_3->addWidget(ClassModbusScreen);

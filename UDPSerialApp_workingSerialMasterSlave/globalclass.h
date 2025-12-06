@@ -107,6 +107,7 @@ public:
     QString getStyleSheet(AppTheme_et themeId);
     QColor getBlinkColor(AppTheme_et theme);
     float convertToFloat(uint32_t raw);
+    QByteArray convertEndian(const QByteArray &input, EndianMode_et mode);
     void LogModbusData();
     QString byteArrayToHexString(const QByteArray &data);
     void Init_statusLabel(QWidget *parent);
@@ -114,6 +115,7 @@ public:
     QLabel *lbl_statuspanel;
     QByteArray RxData;
     QByteArray TxData;
+    QByteArray ErrorData;
     bool lbl_statuspanel_flag = false;
     unsigned int lbl_statuspanel_cntr = 0;
     uint16_t AckErrorCntr = 0;
@@ -127,6 +129,7 @@ public:
     QHostAddress Destination_address ;
     unsigned short Destination_PortNumber;
     bool Modbusconnection_RxFlag = false;
+    bool Modbusconnection_ErrorFlag = false;
 
     std::vector<uint16_t> lineEditsData;
     bool is32BitChecked = false;

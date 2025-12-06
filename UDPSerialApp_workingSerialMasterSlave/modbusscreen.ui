@@ -203,6 +203,9 @@
           <property name="text">
            <string>2</string>
           </property>
+          <property name="maxLength">
+           <number>250</number>
+          </property>
          </widget>
         </item>
         <item row="2" column="0">
@@ -401,7 +404,8 @@
            </font>
           </property>
           <property name="text">
-           <string>SLAVE</string>
+           <string>SLAVE
+(0x06,0x10)</string>
           </property>
          </widget>
         </item>
@@ -434,6 +438,22 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_Error">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Er:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="label_Rx">
           <property name="font">
            <font>
@@ -453,23 +473,99 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QPushButton" name="tbn_ComWindow">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>COMMUNICATION WINDOW</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tbn_ComWindow">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>COMMUNICATION WINDOW</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="CmBx_byteFormate">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <item>
+          <property name="text">
+           <string>0x0A0B0C0D</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>0x0C0D0A0B</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>0x0B0A0D0C</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>0x0D0C0B0A</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="CmBx_dataFormat">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <item>
+          <property name="text">
+           <string>HEX</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DECIMAL</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>BINARY</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="1" column="0">
-      <layout class="QVBoxLayout" name="verticalLayout_3"/>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QWidget" name="wg_EndianView" native="true"/>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

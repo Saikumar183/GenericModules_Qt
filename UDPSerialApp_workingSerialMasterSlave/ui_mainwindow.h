@@ -17,7 +17,6 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QGridLayout>
-#include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
@@ -40,9 +39,7 @@ public:
     QWidget *tab_UDP;
     QWidget *tab_Serial;
     QGridLayout *gridLayout_4;
-    QGroupBox *groupBox;
-    QVBoxLayout *verticalLayout_2;
-    QVBoxLayout *verticalLayout;
+    QWidget *serialPlaceholder;
     QFrame *frame_DataView;
     QGridLayout *gridLayout_3;
     QTabWidget *tabWidget_2;
@@ -102,23 +99,15 @@ public:
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
         gridLayout_4->setContentsMargins(3, 3, 3, 3);
-        groupBox = new QGroupBox(tab_Serial);
-        groupBox->setObjectName(QStringLiteral("groupBox"));
-        groupBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        groupBox->setCheckable(true);
-        verticalLayout_2 = new QVBoxLayout(groupBox);
-        verticalLayout_2->setSpacing(6);
-        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
-        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        verticalLayout = new QVBoxLayout();
-        verticalLayout->setSpacing(6);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        serialPlaceholder = new QWidget(tab_Serial);
+        serialPlaceholder->setObjectName(QStringLiteral("serialPlaceholder"));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(serialPlaceholder->sizePolicy().hasHeightForWidth());
+        serialPlaceholder->setSizePolicy(sizePolicy);
 
-        verticalLayout_2->addLayout(verticalLayout);
-
-
-        gridLayout_4->addWidget(groupBox, 0, 0, 1, 1);
+        gridLayout_4->addWidget(serialPlaceholder, 0, 0, 1, 1);
 
         tabWidget->addTab(tab_Serial, QString());
 
@@ -222,9 +211,8 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "ProtocolsApp", Q_NULLPTR));
         tabWidget->setTabText(tabWidget->indexOf(tab_UDP), QApplication::translate("MainWindow", "UDP", Q_NULLPTR));
-        groupBox->setTitle(QString());
         tabWidget->setTabText(tabWidget->indexOf(tab_Serial), QApplication::translate("MainWindow", "SERIAL", Q_NULLPTR));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_3), QApplication::translate("MainWindow", "Tab 1", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_3), QApplication::translate("MainWindow", "MODBUS", Q_NULLPTR));
         tabWidget_2->setTabText(tabWidget_2->indexOf(tab_4), QApplication::translate("MainWindow", "Tab 2", Q_NULLPTR));
         ui_Style->clear();
         ui_Style->insertItems(0, QStringList()

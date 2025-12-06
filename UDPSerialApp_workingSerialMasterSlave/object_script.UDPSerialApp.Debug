@@ -3,11 +3,11 @@ INPUT(
 ./debug\mainwindow.o
 ./debug\globalclass.o
 ./debug\serialportwidget.o
-./debug\blocksonnumber.o
 ./debug\modbusscreen.o
+./debug\endianregistergridwidget.o
 ./debug\qrc_mediafiles.o
 ./debug\moc_mainwindow.o
 ./debug\moc_serialportwidget.o
-./debug\moc_blocksonnumber.o
 ./debug\moc_modbusscreen.o
+./debug\moc_endianregistergridwidget.o
 );
