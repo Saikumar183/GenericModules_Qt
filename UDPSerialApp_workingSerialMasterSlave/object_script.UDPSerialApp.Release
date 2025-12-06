@@ -1,0 +1,13 @@
+INPUT(
+./release\main.o
+./release\mainwindow.o
+./release\globalclass.o
+./release\serialportwidget.o
+./release\blocksonnumber.o
+./release\modbusscreen.o
+./release\qrc_mediafiles.o
+./release\moc_mainwindow.o
+./release\moc_serialportwidget.o
+./release\moc_blocksonnumber.o
+./release\moc_modbusscreen.o
+);
