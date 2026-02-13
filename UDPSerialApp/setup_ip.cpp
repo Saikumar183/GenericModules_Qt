@@ -16,6 +16,9 @@ SetUp_IP::SetUp_IP(QWidget *parent) :
 
     UDP_Comm = new UdpCommunication(this);
     connect(UDP_Comm,SIGNAL(ProcessUdpRxData(QByteArray)),this,SIGNAL(ProcessUdpRxData(QByteArray)));
+    connect(UDP_Comm,SIGNAL(UpdateLogString(QString)),this,SIGNAL(UpdateLogString(QString)));
+
+
 }
 
 SetUp_IP::~SetUp_IP()

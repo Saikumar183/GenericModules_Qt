@@ -76,9 +76,15 @@ void MainWindow::Init_Connects(void )
 {
     connect(ClassModbusScreen,SIGNAL(sendSerialData(QByteArray)),SerialPort_Screen,SLOT(sendSerialData(QByteArray)));
     connect(ClassModbusScreen,SIGNAL(sendUdpData(QByteArray)),ClassSetUpIp,SLOT(SendUdpData(QByteArray)));
-    connect(SerialPort_Screen,SIGNAL(onSerialDataReceived(QSerialPort*)),ClassModbusScreen,SLOT(onSerialDataReceived(QSerialPort*)));
+    connect(SerialPort_Screen,SIGNAL(onSerialDataReceived(QByteArray)),ClassModbusScreen,SLOT(onSerialDataReceived(QByteArray)));
 
     connect(ClassSetUpIp,SIGNAL(ProcessUdpRxData(QByteArray)),ClassModbusScreen,SLOT(ProcessUdpRxData(QByteArray)));
+
+    connect(ClassSetUpIp,SIGNAL(UpdateLogString(QString)),ClassModbusScreen,SLOT(UpdateLogString(QString)));
+//    connect(&Application,SIGNAL(UpdateLogString(QString)),ClassModbusScreen,SLOT(UpdateLogString(QString)));
+    connect(SerialPort_Screen,SIGNAL(UpdateLogString(QString)),ClassModbusScreen,SLOT(UpdateLogString(QString)));
+    connect(this,SIGNAL(UpdateLogString(QString)),ClassModbusScreen,SLOT(UpdateLogString(QString)));
+//    emit UpdateLogString("Hello");
 }
 
 void MainWindow::Init_miscellaneous(void)

@@ -11,20 +11,33 @@ UdpCommunication::UdpCommunication(QObject *parent) : QObject(parent)
 
 void UdpCommunication::handleReadyRead()
 {
-//    if(Application.isMasterChecked && !Application.isSlaveChecked) return;
-qDebug()<<"rx---";
-    while (udpSocket->hasPendingDatagrams())
+//    qDebug()<<"rx---0";
+//    if(Application.isMasterChecked && !Application.isSlaveChecked)
+    if(!(Application.isMasterChecked && (Application.isSlaveChecked == false)))
     {
+        return;
+    }
+    if(!Application.isModbusUdpEnabled)
+    {
+        return;
+    }
+    if(!Application.Modbusconnection_TxFlag)
+    {
+//         qDebug()<<"rx---1";
+        while (udpSocket->hasPendingDatagrams())
+        {
 
-        Application.Modbusconnection_RxFlag = true;
-        QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
-        QHostAddress sender;
-        unsigned short senderPort;
-        udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
-        emit ProcessUdpRxData(datagram);
-        Application.RxData = datagram;
-        Application.RxPackets++;
+//            Application.Modbusconnection_RxFlag = true;
+            QByteArray datagram;
+            datagram.resize(udpSocket->pendingDatagramSize());
+            QHostAddress sender;
+            unsigned short senderPort;
+            udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+//            qDebug()<<"rx---"<<datagram;
+            emit ProcessUdpRxData(datagram);
+//            Application.RxData = datagram;
+//            Application.RxPackets++;
+        }
     }
 }
 
@@ -79,12 +92,12 @@ bool UdpCommunication::Reconnect_UDP()
     {
          Application.isPortBindCompleted = true;
         CommState = true;
-        Application.UpdateStatusLabel(QString("Listening on port:- %1  %2 ").arg(Source_PortNumber).arg(Source_address.toString()), false);
+        emit UpdateLogString(QString("Listening on port:- %1  %2 ").arg(Source_PortNumber).arg(Source_address.toString()));
     }
     else
     {
         Application.isPortBindCompleted = false;
-        Application.UpdateStatusLabel(QString("Failed to bind to port:- %1  %2 ").arg(Source_PortNumber).arg(Source_address.toString()), true);
+        emit UpdateLogString(QString("Failed to bind to port:- %1  %2 ").arg(Source_PortNumber).arg(Source_address.toString()));
     }
     return CommState;
 }
@@ -92,7 +105,7 @@ void UdpCommunication::closePort()
 {
     if(Application.isPortBindCompleted)
     {
-        Application.UpdateStatusLabel(QString("Port Closed :- %1  %2 ").arg(Application.Source_PortNumber).arg(Application.Source_address.toString()), true);
+        emit UpdateLogString(QString("Port Closed :- %1  %2 ").arg(Application.Source_PortNumber).arg(Application.Source_address.toString()));
         Application.isPortBindCompleted = false;
         udpSocket->abort();
     }

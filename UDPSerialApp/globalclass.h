@@ -96,6 +96,7 @@ typedef enum
     EmeraldDarkGray,        // Medical / Instrumentation
     PurpleCarbon,           // AI / Analytics / Cloud
     AquaSlate,               // Corporate / Clean
+    CrimsonBlack,               // Corporate / Clean
     None
 }AppTheme_et;
 class GlobalClass
@@ -118,10 +119,12 @@ public:
     void LogModbusData();
     QString byteArrayToHexString(const QByteArray &data);
     void Init_statusLabel(QWidget *parent);
-    AppTheme_et currentTheme = EmeraldDarkGray;
+    AppTheme_et currentTheme = CrimsonBlack;
     QLabel *lbl_statuspanel;
     QByteArray RxData;
+    QString RxDataErrorString;
     QByteArray TxData;
+    QString TxDataErrorString;
     QByteArray ErrorData;
     bool lbl_statuspanel_flag = false;
     unsigned int lbl_statuspanel_cntr = 0;
@@ -190,6 +193,8 @@ public:
                              border: 1px solid rgba(200, 0, 0, 0.5);
                              border-radius: 3px;
                              padding: 4px;
+                             font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                             font-size: 20px;
                              selection-background-color: rgba(255, 0, 0, 0.3);
                              selection-color: #202020;
                          }
@@ -309,6 +314,9 @@ public:
                              color: #202020;
                          }
                          )";
+
+signals:
+    void UpdateLogString(QString msg);
 };
 
 extern GlobalClass Application;

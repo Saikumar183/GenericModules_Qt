@@ -36,8 +36,8 @@ inline AppInfo getAppInfo()
 
     // 🔹 BASIC APP INFO – EDIT THESE
     info.appName     = "ProtocolsApp";
-    info.version     = "1.0.0";
-    info.releaseDate = "2025-12-06";  // <- update on official release
+    info.version     = "1.0.1";
+    info.releaseDate = "2026-01-09";  // <- update on official release
 
     // 🔹 BUILD INFO – AUTOMATIC
     info.buildDate   = __DATE__;

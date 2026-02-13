@@ -201,6 +201,11 @@ border:2px solid white;
       </item>
       <item>
        <property name="text">
+        <string>CrimsonBlack</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>None</string>
        </property>
       </item>
@@ -241,7 +246,7 @@ border:2px solid white;
      <x>0</x>
      <y>0</y>
      <width>637</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

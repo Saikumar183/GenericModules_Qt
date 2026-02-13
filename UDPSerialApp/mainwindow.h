@@ -36,7 +36,8 @@ private:
     void Init_miscellaneous(void );
     void UpdateComStatus();
     void ActiveProtocolSelection();
-
+signals:
+    void UpdateLogString(QString);
 private slots:
     void on_ui_Style_currentIndexChanged(int index);
     void onTimeout_Run();

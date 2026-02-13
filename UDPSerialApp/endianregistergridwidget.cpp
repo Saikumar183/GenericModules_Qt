@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QRegularExpressionValidator>
 #include <QEvent>
+#include <QDebug>
 // ─────────────────────────────
 // Constructor
 // ─────────────────────────────
@@ -17,15 +18,19 @@ EndianRegisterGridWidget::EndianRegisterGridWidget(QWidget *parent)
       m_editable(false),
     m_statusLabel(new QLabel(this))
 {
+//    qDebug()<<"...10";
     m_statusLabel->setText("No cell selected.");
     m_statusLabel->setWordWrap(true);
     m_statusLabel->setVisible(false);
     auto *mainLayout = new QVBoxLayout(this);
+//    qDebug()<<"...11";
     mainLayout->addLayout(m_grid);        // grid on top
     mainLayout->addWidget(m_statusLabel); // status line below
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
+//    qDebug()<<"...12";
     setLayout(m_grid);
+//    qDebug()<<"...13";
 }
 
 // ─────────────────────────────
@@ -171,6 +176,7 @@ void EndianRegisterGridWidget::rebuildGrid()
         QLineEdit *edit = new QLineEdit(this);
         edit->setAlignment(Qt::AlignCenter);
         edit->setMaxLength(16);
+        edit->setFont(QFont(edit->fontInfo().family(),edit->fontInfo().pixelSize(), QFont::Bold));
         // editable or not based on flag
         edit->setReadOnly(!m_editable);
         edit->setProperty("cellIndex", i);

@@ -135,9 +135,25 @@ void SerialPortWidget::readSerialPortSettingsAndData()
         return;
     }
 
-    if(Application.isModbusSerialEnabled)
+    if((Application.isModbusSerialEnabled))
     {
-        emit onSerialDataReceived(serialPort);
+           // Start/restart a timer to process after 100 ms of inactivity
+           QTimer::singleShot(100, this, [this]()
+           {
+               QByteArray buffer;
+
+               buffer.append(serialPort->readAll());
+               if (!buffer.isEmpty())
+               {
+                   emit onSerialDataReceived(buffer);
+                   buffer.clear();
+               }
+
+           });
+//        if (serialPort->bytesAvailable() > 0)
+//        {
+//            emit onSerialDataReceived(serialPort->readAll());
+//        }
     }
     else
     {
@@ -257,12 +273,14 @@ void SerialPortWidget::onOpenPortClicked()
         serialPort->close();
         pushButtonOpen->setText("OPEN PORT");
         pushButtonOpen->setStyleSheet("");
+        rxdata->setText("Com port is Closed: " + portName);
         emit commerror("Comm Port Closed: " + Pname);
         if(Application.ModbusURATCONN_Flag)
         {
             Application.Modbusconnection_Flag = false;
         }
     }
+    emit UpdateLogString(rxdata->text());
 }
 
 void SerialPortWidget::onBaudRateSelectionChanged(int index)
@@ -701,7 +719,7 @@ void SerialPortWidget::SendModbusFrame(QByteArray dataFrame, int expectedLength,
     }
 
     if (!success) {
-        Application.UpdateStatusLabel("Modbus UART: Failed to get complete valid response.", true);
+        emit UpdateLogString("Modbus UART: Failed to get complete valid response.");
     }
 
     emit ModbusFrameResponse(receivedData, success);

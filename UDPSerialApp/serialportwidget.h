@@ -38,8 +38,8 @@ public:
 
 signals:
     void commerror(const QString);
-    void onSerialDataReceived(QSerialPort *serialPort);
-
+    void onSerialDataReceived(QByteArray serialPort);
+    void UpdateLogString(QString msg);
 public slots:
     void updatePortList();
     void onOpenPortClicked();

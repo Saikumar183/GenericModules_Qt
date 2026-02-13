@@ -35,6 +35,7 @@ private:
 
 signals:
     void ProcessUdpRxData(QByteArray);
+    void UpdateLogString(QString msg);
 public slots:
     void handleReadyRead();
     void displayError(QAbstractSocket::SocketError socketError);

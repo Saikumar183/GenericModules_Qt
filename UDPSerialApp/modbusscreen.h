@@ -11,6 +11,7 @@ enum ModbusException {
     MODBUS_EX_ILLEGAL_FUNC  = 0x01,
     MODBUS_EX_ILLEGAL_DATA_ADDR = 0x02,
     MODBUS_EX_ILLEGAL_DATA_VAL  = 0x03,
+    MODBUS_EX_CRC_MISMATCH  = 0x04,
     // ... add others if needed
 };
 
@@ -35,7 +36,7 @@ public:
     uint16_t ModbusScreenRegQuantity;
     uint8_t ModbusScreenFunctionCode;
     uint8_t ModbusScreenSlaveID=1;
-
+    QString informationString = NULL;
     void UpdateTxDataBlink();
     void UpdateRxDataBlink();
     void UpdatePackeCounts();
@@ -49,8 +50,11 @@ private:
         QDialog *dialog = nullptr;
         QTextEdit *textEdit = nullptr;
         QCheckBox *checkBox = nullptr;
+        QCheckBox *checkBox_EndianType = nullptr;
         QFile *logFile = nullptr;
         bool loggingEnabled = false;
+         bool EndianTypeEnabled = false;
+         QLineEdit *FontSizeEdit = nullptr;
     };
 
     LogDialogUI logUI;
@@ -74,11 +78,14 @@ private:
     void handleModbusMasterResponse(const QByteArray &frame);
     QByteArray convertEndian(const QByteArray &input, EndianMode_et mode);
     bool isCommunicationActiveToSend();
+
+    void applyFullScreenSize();
 signals:
     void sendSerialData(QByteArray);
     void sendUdpData(QByteArray);
-public slots:
 
+public slots:
+    void UpdateLogString(QString msg);
     void ScanTimerFunction();
     void on_tbn_ComWindow_clicked();
     void buildModbusRTUFrame(quint8 slaveId,
@@ -94,8 +101,9 @@ public slots:
                                                    quint16 dataSize,
                                                    ModbusException ex);
     void on_Cmbx_Func_Code_currentIndexChanged(const QString &arg1);
-    void onSerialDataReceived(QSerialPort *serialPort);
+    void onSerialDataReceived(QByteArray serialPortData);
     void ProcessUdpRxData(QByteArray UdpData);
+    void SetComLineEditFontSize(QString Font);
 
 
 private slots:
@@ -113,6 +121,7 @@ private slots:
     void on_checkBox_Slave_clicked(bool checked);
     void on_checkBox_autoSend_clicked(bool checked);
     void on_tbn_SendCmd_clicked();
+    void on_checkBox_Frame_clicked(bool checked);
 };
 
 #endif // MODBUSSCREEN_H

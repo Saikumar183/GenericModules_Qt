@@ -63,6 +63,9 @@ public:
     QLabel *label_Error;
     QLabel *label_Rx;
     QHBoxLayout *horizontalLayout;
+    QCheckBox *checkBox_Frame;
+    QSpacerItem *horizontalSpacer_2;
+    QCheckBox *checkBox_CRCSWAP;
     QSpacerItem *horizontalSpacer;
     QPushButton *tbn_ComWindow;
     QComboBox *CmBx_byteFormate;
@@ -74,7 +77,7 @@ public:
     {
         if (ModbusScreen->objectName().isEmpty())
             ModbusScreen->setObjectName(QStringLiteral("ModbusScreen"));
-        ModbusScreen->resize(400, 300);
+        ModbusScreen->resize(631, 301);
         gridLayout = new QGridLayout(ModbusScreen);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         gridLayout_5 = new QGridLayout();
@@ -158,6 +161,7 @@ public:
         sizePolicy.setHeightForWidth(le_registercount->sizePolicy().hasHeightForWidth());
         le_registercount->setSizePolicy(sizePolicy);
         le_registercount->setFont(font);
+        le_registercount->setStyleSheet(QStringLiteral(""));
         le_registercount->setMaxLength(250);
 
         gridLayout_7->addWidget(le_registercount, 2, 1, 1, 1);
@@ -290,6 +294,22 @@ public:
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        checkBox_Frame = new QCheckBox(ModbusScreen);
+        checkBox_Frame->setObjectName(QStringLiteral("checkBox_Frame"));
+        checkBox_Frame->setFont(font);
+
+        horizontalLayout->addWidget(checkBox_Frame);
+
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_2);
+
+        checkBox_CRCSWAP = new QCheckBox(ModbusScreen);
+        checkBox_CRCSWAP->setObjectName(QStringLiteral("checkBox_CRCSWAP"));
+        checkBox_CRCSWAP->setFont(font);
+
+        horizontalLayout->addWidget(checkBox_CRCSWAP);
+
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer);
@@ -373,6 +393,8 @@ public:
         label_Tx->setText(QApplication::translate("ModbusScreen", "Tx:", Q_NULLPTR));
         label_Error->setText(QApplication::translate("ModbusScreen", "Er:", Q_NULLPTR));
         label_Rx->setText(QApplication::translate("ModbusScreen", "Rx:", Q_NULLPTR));
+        checkBox_Frame->setText(QApplication::translate("ModbusScreen", "Frames", Q_NULLPTR));
+        checkBox_CRCSWAP->setText(QApplication::translate("ModbusScreen", "CRC SWAP", Q_NULLPTR));
         tbn_ComWindow->setText(QApplication::translate("ModbusScreen", "COMMUNICATION WINDOW", Q_NULLPTR));
         CmBx_byteFormate->clear();
         CmBx_byteFormate->insertItems(0, QStringList()

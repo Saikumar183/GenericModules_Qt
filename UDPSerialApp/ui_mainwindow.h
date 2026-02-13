@@ -202,7 +202,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 637, 21));
+        menuBar->setGeometry(QRect(0, 0, 637, 26));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -234,6 +234,7 @@ public:
          << QApplication::translate("MainWindow", "EmeraldDarkGray", Q_NULLPTR)
          << QApplication::translate("MainWindow", "PurpleCarbon", Q_NULLPTR)
          << QApplication::translate("MainWindow", "AquaSlate               ", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "CrimsonBlack", Q_NULLPTR)
          << QApplication::translate("MainWindow", "None", Q_NULLPTR)
         );
         checkBox_ConnectStatus->setText(QApplication::translate("MainWindow", "CONNECTED", Q_NULLPTR));

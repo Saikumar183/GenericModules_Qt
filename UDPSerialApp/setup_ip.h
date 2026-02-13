@@ -37,7 +37,7 @@ private slots:
     void on_tbn_Apply_clicked(bool checked);
 
 signals:
-
+    void UpdateLogString(QString msg);
     void ProcessUdpRxData(QByteArray);
 public slots:
     void on_tbn_Apply_clicked();
