@@ -1,0 +1,15 @@
+INPUT(
+./release\main.o
+./release\mainwindow.o
+./release\DataManager.o
+./release\PlotManager.o
+./release\qcustomplot.o
+./release\ExportManager.o
+./release\Logger.o
+./release\moc_mainwindow.o
+./release\moc_DataManager.o
+./release\moc_PlotManager.o
+./release\moc_qcustomplot.o
+./release\moc_ExportManager.o
+./release\moc_Logger.o
+);
